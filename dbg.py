@@ -18,7 +18,9 @@ d.dbg(4, 'This level 4 message will print bacause verbosity_floor =', d.verbosit
 
 # Stuff we need
 import sys
+import os
 import logging
+from logging import handlers
 
 
 class Dbg:
@@ -32,38 +34,51 @@ class Dbg:
     def __init__(self, stdout=False, stderr=True, syslog=False, verbosity_floor=0):
         'Debug initializer'
 
+        LINUX_LOG_DEV = '/dev/log'
+
         fmt = logging.Formatter('%(levelname)s %(name)s %(asctime)s %(message)s')
         lvl = logging.DEBUG
+
 
         # emit only debug messages below the verbosity floor level
         self.verbosity_floor = verbosity_floor
 
         # our named logging facility for stderr
-        self.LOG = logging.getLogger(__name__)
-        self.LOG.setLevel(lvl)
+        self.log_op = logging.getLogger(__name__)
+        self.log_op.setLevel(lvl)
 
         if stderr:
             errhdlr = logging.StreamHandler(sys.stderr)
             errhdlr.setLevel(lvl)
             errhdlr.setFormatter(fmt)
-            self.LOG.addHandler(errhdlr)
+            self.log_op.addHandler(errhdlr)
 
         if stdout:
             outhdlr = logging.StreamHandler(sys.stdout)
             outhdlr.setLevel(lvl)
             outhdlr.setFormatter(fmt)
-            self.LOG.addHandler(outhdlr)
+            self.log_op.addHandler(outhdlr)
 
         if syslog:
-            pass
+            if os.path.exists(LINUX_LOG_DEV):
+                syslog_dev = LINUX_LOG_DEV
+            else:
+                syslog_dev = ''
 
+            if syslog_dev:
+                syshdlr = handlers.SysLogHandler(address=syslog_dev, facility=handlers.SysLogHandler.LOG_DAEMON)
+            else:
+                syshdlr = handlers.SysLogHandler(facility=handlers.SysLogHandler.LOG_DAEMON)
+            syshdlr.setLevel(lvl)
+            syshdlr.setFormatter(fmt)
+            self.log_op.addHandler(syshdlr)
 
     def __log(self, caller_name, severity, level, message, *args):
         'Log a debugging message if our verbosity floor is high enough'
 
         # print a debug message only if permitted by the verbosity floor level
         if level <= self.verbosity_floor:
-            self.LOG.log(severity, 'from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
+            self.log_op.log(severity, 'from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
 
     def dbg(self, level, message, *args):
         'Log a debugging message if our verbosity floor is high enough'
@@ -107,7 +122,7 @@ class Dbg:
 
 if __name__ == '__main__':
     # setup debugging facility
-    d = Dbg(stderr=True, verbosity_floor=3)
+    d = Dbg(stderr=True, syslog=True, verbosity_floor=10)
 
     # emit a debug message above the floor
     d.dbg(2, 'This level 2 message should appear because the',
