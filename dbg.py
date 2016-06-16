@@ -29,7 +29,7 @@ class Dbg:
     d = Dbg(stderr=True, verbosity_floor=3)
     '''
 
-    def __init__(self, stdout=False, stderr=True, verbosity_floor=0):
+    def __init__(self, stdout=False, stderr=True, syslog=False, verbosity_floor=0):
         'Debug initializer'
 
         fmt = logging.Formatter('%(levelname)s %(name)s %(asctime)s %(message)s')
@@ -54,15 +54,24 @@ class Dbg:
             outhdlr.setFormatter(fmt)
             self.LOG.addHandler(outhdlr)
 
+        if syslog:
+            pass
+
+
+    def __log(self, caller_name, severity, level, message, *args):
+        'Log a debugging message if our verbosity floor is high enough'
+
+        # print a debug message only if permitted by the verbosity floor level
+        if level <= self.verbosity_floor:
+            self.LOG.log(severity, 'from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
+
     def dbg(self, level, message, *args):
         'Log a debugging message if our verbosity floor is high enough'
 
         # obtain the name of our caller as a string
         caller_name = sys._getframe().f_back.f_code.co_name
 
-        # print a debug message only if permitted by the verbosity floor level
-        if level <= self.verbosity_floor:
-            self.LOG.debug('from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
+        self.__log(caller_name, 10, level, message, *args)
 
     def info(self, level, message, *args):
         'Log an info message if our verbosity floor is high enough'
@@ -70,9 +79,7 @@ class Dbg:
         # obtain the name of our caller as a string
         caller_name = sys._getframe().f_back.f_code.co_name
 
-        # print a debug message only if permitted by the verbosity floor level
-        if level <= self.verbosity_floor:
-            self.LOG.info('from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
+        self.__log(caller_name, 20, level, message, *args)
 
     def warning(self, level, message, *args):
         'Log a warning message if our verbosity floor is high enough'
@@ -80,9 +87,7 @@ class Dbg:
         # obtain the name of our caller as a string
         caller_name = sys._getframe().f_back.f_code.co_name
 
-        # print a debug message only if permitted by the verbosity floor level
-        if level <= self.verbosity_floor:
-            self.LOG.warning('from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
+        self.__log(caller_name, 30, level, message, *args)
 
     def error(self, level, message, *args):
         'Log an error message if our verbosity floor is high enough'
@@ -90,9 +95,7 @@ class Dbg:
         # obtain the name of our caller as a string
         caller_name = sys._getframe().f_back.f_code.co_name
 
-        # print a debug message only if permitted by the verbosity floor level
-        if level <= self.verbosity_floor:
-            self.LOG.error('from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
+        self.__log(caller_name, 40, level, message, *args)
 
     def critical(self, level, message, *args):
         'Log a critical message if our verbosity floor is high enough'
@@ -100,20 +103,17 @@ class Dbg:
         # obtain the name of our caller as a string
         caller_name = sys._getframe().f_back.f_code.co_name
 
-        # print a debug message only if permitted by the verbosity floor level
-        if level <= self.verbosity_floor:
-            self.LOG.critical('from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
-
+        self.__log(caller_name, 50, level, message, *args)
 
 if __name__ == '__main__':
     # setup debugging facility
     d = Dbg(stderr=True, verbosity_floor=3)
 
     # emit a debug message above the floor
-    d.log(2, 'This level 2 message should appear because the',
+    d.dbg(2, 'This level 2 message should appear because the',
               'verbosity floor = ' + str(d.verbosity_floor))
 
     # this debug message should not appear
-    d.dbg(4, 'This level 4 message should NOT appear because the',
+    d.error(4, 'This level 4 message should NOT appear because the',
               'verbosity floor = ' + str(d.verbosity_floor))
 
