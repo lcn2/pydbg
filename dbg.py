@@ -29,25 +29,30 @@ class Dbg:
     d = Dbg(stderr=True, verbosity_floor=3)
     '''
 
-    def __init__(self, stderr=True, verbosity_floor=0):
+    def __init__(self, stdout=False, stderr=True, verbosity_floor=0):
         'Debug initializer'
-        
-        # How we standardize log message strings
-        logging.basicConfig(
-            level = logging.DEBUG,
-            # format = '%(levelname)-8s %(name)-13s %(asctime)s %(message)s',
-            format = '%(levelname)s %(name)s %(asctime)s %(message)s',
-            # filename = 'tmp.log'
-        )
+
+        fmt = logging.Formatter('%(levelname)s %(name)s %(asctime)s %(message)s')
+        lvl = logging.DEBUG
 
         # emit only debug messages below the verbosity floor level
         self.verbosity_floor = verbosity_floor
 
         # our named logging facility for stderr
         self.LOG = logging.getLogger(__name__)
+        self.LOG.setLevel(lvl)
 
-        # enable or disable debugging to stderr
-        self._write_to_stderr = stderr
+        if stderr:
+            errhdlr = logging.StreamHandler(sys.stderr)
+            errhdlr.setLevel(lvl)
+            errhdlr.setFormatter(fmt)
+            self.LOG.addHandler(errhdlr)
+
+        if stdout:
+            outhdlr = logging.StreamHandler(sys.stdout)
+            outhdlr.setLevel(lvl)
+            outhdlr.setFormatter(fmt)
+            self.LOG.addHandler(outhdlr)
 
     def dbg(self, level, message, *args):
         'Log a debugging message if our verbosity floor is high enough'
@@ -55,10 +60,49 @@ class Dbg:
         # obtain the name of our caller as a string
         caller_name = sys._getframe().f_back.f_code.co_name
 
-        # print a debug message only if permited by the verbosity floor level
+        # print a debug message only if permitted by the verbosity floor level
         if level <= self.verbosity_floor:
-            if self._write_to_stderr:
-                self.LOG.debug('from: ' + caller_name + ': ' + message + ' '.join(args))
+            self.LOG.debug('from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
+
+    def info(self, level, message, *args):
+        'Log an info message if our verbosity floor is high enough'
+
+        # obtain the name of our caller as a string
+        caller_name = sys._getframe().f_back.f_code.co_name
+
+        # print a debug message only if permitted by the verbosity floor level
+        if level <= self.verbosity_floor:
+            self.LOG.info('from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
+
+    def warning(self, level, message, *args):
+        'Log a warning message if our verbosity floor is high enough'
+
+        # obtain the name of our caller as a string
+        caller_name = sys._getframe().f_back.f_code.co_name
+
+        # print a debug message only if permitted by the verbosity floor level
+        if level <= self.verbosity_floor:
+            self.LOG.warning('from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
+
+    def error(self, level, message, *args):
+        'Log an error message if our verbosity floor is high enough'
+
+        # obtain the name of our caller as a string
+        caller_name = sys._getframe().f_back.f_code.co_name
+
+        # print a debug message only if permitted by the verbosity floor level
+        if level <= self.verbosity_floor:
+            self.LOG.error('from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
+
+    def critical(self, level, message, *args):
+        'Log a critical message if our verbosity floor is high enough'
+
+        # obtain the name of our caller as a string
+        caller_name = sys._getframe().f_back.f_code.co_name
+
+        # print a debug message only if permitted by the verbosity floor level
+        if level <= self.verbosity_floor:
+            self.LOG.critical('from: {cn} {mg} {ag}'.format(cn=caller_name, mg=message, ag=' '.join(args)))
 
 
 if __name__ == '__main__':
@@ -66,9 +110,10 @@ if __name__ == '__main__':
     d = Dbg(stderr=True, verbosity_floor=3)
 
     # emit a debug message above the floor
-    d.dbg(2, 'This level 2 message should appear because the ',
+    d.log(2, 'This level 2 message should appear because the',
               'verbosity floor = ' + str(d.verbosity_floor))
 
     # this debug message should not appear
-    d.dbg(4, 'This level 4 message should NOT appear because the ',
+    d.dbg(4, 'This level 4 message should NOT appear because the',
               'verbosity floor = ' + str(d.verbosity_floor))
+
