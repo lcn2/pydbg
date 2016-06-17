@@ -23,7 +23,7 @@ import logging
 from logging import handlers
 
 
-class Dbg:
+class Dbg(object):
     '''\
     General debugging facility class
 
@@ -60,6 +60,8 @@ class Dbg:
             outhdlr.setLevel(lvl)
             outhdlr.setFormatter(fmt)
             self.log_op.addHandler(outhdlr)
+
+        self.handlers = self.log_op.handlers[:]
 
         # stream handler for syslog if enabled
         if syslog:
@@ -130,15 +132,27 @@ class Dbg:
 
         self.__log(caller_name, 50, level, message, *args)
 
+    def close_handers(self):
+        for handler in self.handlers:
+            handler.close()
+            self.log_op.removeHandler(handler)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close_handers()
+
 if __name__ == '__main__':
     # setup debugging facility
-    d = Dbg(stderr=True, syslog=True, tofile='/tmp/log.log', verbosity_floor=3)
 
-    # emit a debug message above the floor
-    d.dbg(2, 'This level 2 message should appear because the',
-              'verbosity floor = ' + str(d.verbosity_floor))
+    with Dbg(stderr=True, syslog=True, tofile='/tmp/log.log', verbosity_floor=3) as d:
+        # emit a debug message above the floor
+        d.dbg(2, 'This level 2 message should appear because the',
+                 'verbosity floor = ' + str(d.verbosity_floor))
 
-    # this debug message should not appear
-    d.error(4, 'This level 4 message should NOT appear because the',
-              'verbosity floor = ' + str(d.verbosity_floor))
+        # this debug message should not appear
+        d.error(4, 'This level 4 message should NOT appear because the',
+                   'verbosity floor = ' + str(d.verbosity_floor))
+
 
