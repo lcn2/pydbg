@@ -31,7 +31,7 @@ class Dbg:
     d = Dbg(stderr=True, verbosity_floor=3)
     '''
 
-    def __init__(self, stdout=False, stderr=True, syslog=False, verbosity_floor=0):
+    def __init__(self, stdout=False, stderr=True, syslog=False, tofile='', verbosity_floor=0):
         'Debug initializer'
 
         LINUX_LOG_DEV = '/dev/log'
@@ -43,22 +43,25 @@ class Dbg:
         # emit only debug messages below the verbosity floor level
         self.verbosity_floor = verbosity_floor
 
-        # our named logging facility for stderr
+        # our named logging facility
         self.log_op = logging.getLogger(__name__)
         self.log_op.setLevel(lvl)
 
+        # stream handler for stderr if enabled
         if stderr:
             errhdlr = logging.StreamHandler(sys.stderr)
             errhdlr.setLevel(lvl)
             errhdlr.setFormatter(fmt)
             self.log_op.addHandler(errhdlr)
 
+        # stream handler for stdout if enabled
         if stdout:
             outhdlr = logging.StreamHandler(sys.stdout)
             outhdlr.setLevel(lvl)
             outhdlr.setFormatter(fmt)
             self.log_op.addHandler(outhdlr)
 
+        # stream handler for syslog if enabled
         if syslog:
             if os.path.exists(LINUX_LOG_DEV):
                 syslog_dev = LINUX_LOG_DEV
@@ -72,6 +75,13 @@ class Dbg:
             syshdlr.setLevel(lvl)
             syshdlr.setFormatter(fmt)
             self.log_op.addHandler(syshdlr)
+
+        # file handler if enabled
+        if tofile:
+            fhdlr = logging.FileHandler(tofile)
+            fhdlr.setLevel(lvl)
+            fhdlr.setFormatter(fmt)
+            self.log_op.addHandler(fhdlr)
 
     def __log(self, caller_name, severity, level, message, *args):
         'Log a debugging message if our verbosity floor is high enough'
@@ -122,7 +132,7 @@ class Dbg:
 
 if __name__ == '__main__':
     # setup debugging facility
-    d = Dbg(stderr=True, syslog=True, verbosity_floor=10)
+    d = Dbg(stderr=True, syslog=True, tofile='/tmp/log.log', verbosity_floor=3)
 
     # emit a debug message above the floor
     d.dbg(2, 'This level 2 message should appear because the',
