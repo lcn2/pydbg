@@ -31,21 +31,21 @@ class Dbg(object):
     d = Dbg(stderr=True, verbosity_floor=3)
     '''
 
-    def __init__(self, stdout=False, stderr=True, syslog=False, tofile='', verbosity_floor=0):
+    def __init__(self, name, stdout=False, stderr=True, syslog=False, tofile='', verbosity_floor=0):
         'Debug initializer'
 
         LINUX_LOG_DEV = '/dev/log'
 
-        fmt = logging.Formatter('%(levelname)s %(asctime)s %(message)s')
+        fmt = logging.Formatter('%(levelname)s %(name)s %(asctime)s %(message)s')
         lvl = logging.DEBUG
-
 
         # emit only debug messages below the verbosity floor level
         self.verbosity_floor = verbosity_floor
 
         # our named logging facility
-        self.log_op = logging.getLogger(__name__)
+        self.log_op = logging.getLogger(name)
         self.log_op.setLevel(lvl)
+        self.log_op.propagate = False
 
         # stream handler for stderr if enabled
         if stderr:
@@ -149,10 +149,10 @@ if __name__ == '__main__':
     with Dbg(stderr=True, syslog=True, tofile='/tmp/log.log', verbosity_floor=3) as d:
         # emit a debug message above the floor
         d.dbg(2, 'This level 2 message should appear because the',
-                 'verbosity floor = ' + str(d.verbosity_floor))
+                  'verbosity floor = ' + str(d.verbosity_floor))
 
         # this debug message should not appear
         d.error(4, 'This level 4 message should NOT appear because the',
-                   'verbosity floor = ' + str(d.verbosity_floor))
+                  'verbosity floor = ' + str(d.verbosity_floor))
 
 
