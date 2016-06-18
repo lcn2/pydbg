@@ -36,7 +36,7 @@ class Dbg(object):
 
         LINUX_LOG_DEV = '/dev/log'
 
-        fmt = logging.Formatter('%(levelname)s %(name)s %(asctime)s %(message)s')
+        fmt = logging.Formatter('%(levelname)s %(asctime)s %(message)s')
         lvl = logging.DEBUG
 
 
