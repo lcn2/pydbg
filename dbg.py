@@ -31,7 +31,7 @@ class Dbg(object):
     d = Dbg(stderr=True, verbosity_floor=3)
     '''
 
-    def __init__(self, name, stdout=False, stderr=True, syslog=False, tofile='', verbosity_floor=0):
+    def __init__(self, name, stdout=False, stderr=True, syslog=False, tofile='', customh=None, verbosity_floor=0):
         'Debug initializer'
 
         LINUX_LOG_DEV = '/dev/log'
@@ -84,6 +84,12 @@ class Dbg(object):
             fhdlr.setLevel(lvl)
             fhdlr.setFormatter(fmt)
             self.log_op.addHandler(fhdlr)
+
+        if customh:
+            ch = customh
+            ch.setLevel(lvl)
+            ch.setFormatter(fmt)
+            self.log_op.addHandler(ch)
 
     def __log(self, caller_name, severity, level, message, *args):
         'Log a debugging message if our verbosity floor is high enough'
