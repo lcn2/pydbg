@@ -152,7 +152,7 @@ class Dbg(object):
 if __name__ == '__main__':
     # setup debugging facility
 
-    with Dbg(stderr=True, syslog=True, tofile='/tmp/log.log', verbosity_floor=3) as d:
+    with Dbg(__name__, stderr=True, syslog=True, tofile='/tmp/log.log', verbosity_floor=3) as d:
         # emit a debug message above the floor
         d.dbg(2, 'This level 2 message should appear because the',
                   'verbosity floor = ' + str(d.verbosity_floor))
