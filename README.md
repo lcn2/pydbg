@@ -1,4 +1,5 @@
 # pydbg
+
 Python debug module
 
 dbg - General debugging facilities
@@ -14,4 +15,9 @@ from dbg import Dbg
 
 d = Dbg(stderr=True, verbosity_floor=3)
 
-d.dbg(4, 'This level 4 message will print bacause verbosity_floor =', d.verbosity_floor)
+d.dbg(4, 'This level 4 message will print because verbosity_floor =', d.verbosity_floor)
+
+
+# Reporting Security Issues
+
+To report a security issue, please visit "[Reporting Security Issues](https://github.com/lcn2/pydbg/security/policy)".
