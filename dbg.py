@@ -14,6 +14,14 @@ d = Dbg(stderr=True, verbosity_floor=3)
 
 d.dbg(4, 'This level 4 message will print bacause verbosity_floor =', d.verbosity_floor)
 
+***
+
+chongo (Landon Curt Noll) /\oo/\
+
+http://www.isthe.com/chongo/index.html
+https://github.com/lcn2
+
+Share and enjoy!  :-)
 '''
 
 # Stuff we need
